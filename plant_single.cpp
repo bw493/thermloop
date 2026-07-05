@@ -1,7 +1,29 @@
 #include <cmath>
 #include <iostream>
 #include <iomanip>
+#include <functional>
 using namespace std;
+
+// A general-purpose numerical integrator, using the trapezoidal rule.
+// Accepts any function f(t) and returns the area under f from 0 to t_end.
+double integrate(function<double(double)> f, double t_end, double dt) {
+    double accumulated = 0.0;
+    double previous_value = f(0.0);
+    double current_time = 0.0;
+
+    while (current_time < t_end) {
+        double next_time = current_time + dt;
+        if (next_time > t_end) next_time = t_end;
+
+        double current_value = f(next_time);
+        accumulated += 0.5 * (previous_value + current_value) * (next_time - current_time);
+
+        previous_value = current_value;
+        current_time = next_time;
+    }
+
+    return accumulated;
+}
 
 class FosterStage { // a single R-C pair
     public:
@@ -12,6 +34,8 @@ class FosterStage { // a single R-C pair
 
         tau_ = R_ * C_;      // time constant
         invC_ = 1.0 / C_;    // temperature jump per unit of instantaneous heat
+        // noting from Q=CV, input heat is capacitance (heat per increase temp) * temp
+        // so temp is Q/C, and unit heat input results in 1/C
     }
 
     double resistance() const { return R_; }
@@ -22,11 +46,25 @@ class FosterStage { // a single R-C pair
     double impulse(double t) const { // the power input at time t = 0
         if (t < 0.0) return 0.0;
         return invC_ * exp(-t / tau_);
+        // resulting tempurature after an impulse of heat (power), then decays exponentially
+        // as it leaks through R; the division by tau follows from solving the
+        // governing differential equation of the R-C system
     }
 
-    double step(double t, double p = 1.0) const { // temperature response to a sustained, constant power input turned on at t=0
+    double step(double t, double p = 1.0) const {
+        // temperature response to sustained power p turned on at t=0
+        // it is the integral of impulse, scaled by p
         if (t < 0.0) return T_amb_;
-        return T_amb_ + p * R_ * (1.0 - exp(-t / tau_));
+
+        const double dt = tau_ / 1000.0; // fine relative to the system's own timescale
+        const double t_end = (t < 30.0 * tau_) ? t : 30.0 * tau_;
+        // beyond ~30 time constants, impulse is essentially zero, so
+        // integrating further adds no meaningful contribution
+
+        auto impulse_fn = [this](double s) { return impulse(s); };
+        double accumulated_rise = integrate(impulse_fn, t_end, dt);
+
+        return T_amb_ + p * accumulated_rise;
     }
 
     private:
