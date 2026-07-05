@@ -33,7 +33,6 @@ class FosterNetwork {
         return sum;
     }
 
-    // Phase three: per stage responses
     double stageImpulse(std::size_t i, double t) const {
         if (t < 0.0) return 0.0;
         return invC_[i] * std::exp(-t / tau_[i]);
