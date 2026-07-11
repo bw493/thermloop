@@ -3,6 +3,12 @@
 *.o
 *.obj
 
+# macOS metadata
+.DS_Store
+
+# Compiled test binaries (no extension)
+controller_test
+
 # Build directories (if using CMake/Ninja out-of-source builds)
 build/
 out/
