@@ -1,1 +1,8 @@
-plant_single
+# Compiled binaries
+*.exe
+*.o
+*.obj
+
+# Build directories (if using CMake/Ninja out-of-source builds)
+build/
+out/
