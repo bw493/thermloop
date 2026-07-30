@@ -24,6 +24,11 @@ The platform profile is selected automatically in `throttle.h` from the
 compiler's architecture defines. To override, define `TL_REAL` and
 `TL_MAX_STAGES` before including the header.
 
+Refer the those projects made by other ppl for reference:
+- https://www.instructables.com/Send-Focus-Data-From-OpenBCI-GUI-to-Arduino/
+- https://arxiv.org/abs/2202.01936
+- https://www.reddit.com/r/BCI/comments/1polj4b/i_designed_an_open_source_8channel_eeg_board/
+
 ## Repository map
 
 **Onboard core (portable, freestanding)**
